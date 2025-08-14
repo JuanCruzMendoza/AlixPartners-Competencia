@@ -40,7 +40,7 @@ def rolling_sales(datos_unidos, group, windows=[7,30,90], std=True):
         merge_cols = [group, 'DATE', nueva_col_mean]
 
         if std:
-            merge_cols += nueva_col_std
+            merge_cols.append(nueva_col_std)
 
         merged = datos_unidos.merge(subgroup_daily[merge_cols], on=[group, 'DATE'], how='left')
         datos_unidos[nueva_col_mean] = merged[nueva_col_mean]
