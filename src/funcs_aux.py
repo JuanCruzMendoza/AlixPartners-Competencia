@@ -1,12 +1,16 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score
 from datetime import timedelta
 import random
 
 
-def features_rolling_mean_std(datos_unidos, group, windows=[7,30,90]):
+def rolling_sales(datos_unidos, group, windows=[7,30,90], std=True):
+    """
+    Dado un dataframe con las transacciones, realiza las medias moviles de TOTAL_SALES
+    agrupados por la columna group en diferentes ventanas temporales (windows)
+    """
+
     for window in windows:
         nueva_col_mean = f'{group}_mean_{window}D'
         nueva_col_std = f'{group}_std_{window}D'
@@ -25,20 +29,149 @@ def features_rolling_mean_std(datos_unidos, group, windows=[7,30,90]):
             .reset_index(drop=True)
         )
 
-        subgroup_daily[nueva_col_std] = (
-        subgroup_daily.groupby(group)['TOTAL_SALES']
-        .apply(lambda x: x.shift().rolling(window=7, min_periods=1).std().fillna(0)) # para el primer dia el valor es 0
-        .reset_index(drop=True)
-        )
+        if std:
+            subgroup_daily[nueva_col_std] = (
+            subgroup_daily.groupby(group)['TOTAL_SALES']
+            .apply(lambda x: x.shift().rolling(window=7, min_periods=1).std().fillna(0)) # para el primer dia el valor es 0
+            .reset_index(drop=True)
+            )
 
         # Asignar columnas al dataframe original
-        merge_cols = [group, 'DATE', nueva_col_mean, nueva_col_std]
+        merge_cols = [group, 'DATE', nueva_col_mean]
+
+        if std:
+            merge_cols += nueva_col_std
+
         merged = datos_unidos.merge(subgroup_daily[merge_cols], on=[group, 'DATE'], how='left')
-
         datos_unidos[nueva_col_mean] = merged[nueva_col_mean]
-        datos_unidos[nueva_col_std] = merged[nueva_col_std]
+
+        if std:
+            datos_unidos[nueva_col_std] = merged[nueva_col_std]
 
 
+def rolling_price_pct(datos_unidos, group, windows=[7, 30, 90], std=True):
+    """
+    Calcula medias móviles de cambios porcentuales de PRICE en relación al primer precio
+    registrado de cada SKU, agrupando por 'group', en distintas ventanas temporales (windows)
+    """
+
+    # Asegurar que PRICE sea numérico
+    datos_unidos['PRICE'] = pd.to_numeric(datos_unidos['PRICE'], errors='coerce')
+
+    # Calcular el cambio porcentual respecto al primer precio de cada SKU
+    datos_unidos['price_pct_change'] = (
+        datos_unidos.groupby('SKU')['PRICE']
+        .transform(lambda x: (x - x.iloc[0]) / x.iloc[0])
+        .astype(float)  # aseguramos tipo float
+    )
+
+    for window in windows:
+        nueva_col_mean = f'{group}_price_pct_mean_{window}D'
+        nueva_col_std = f'{group}_price_pct_std_{window}D'
+
+        # Calcular promedio diario por grupo
+        group_daily = (
+            datos_unidos.groupby([group, 'DATE'], as_index=False)['price_pct_change']
+            .mean()
+            .sort_values([group, 'DATE'])
+        )
+
+        # Media móvil excluyendo el día actual
+        group_daily[nueva_col_mean] = (
+            group_daily.groupby(group)['price_pct_change']
+            .apply(lambda x: x.shift().rolling(window, min_periods=1).mean().fillna(0))
+            .reset_index(drop=True)
+        )
+
+        if std:
+            group_daily[nueva_col_std] = (
+                group_daily.groupby(group)['price_pct_change']
+                .apply(lambda x: x.shift().rolling(window, min_periods=1).std().fillna(0))
+                .reset_index(drop=True)
+            )
+
+        # Merge al dataframe original
+        merge_cols = [group, 'DATE', nueva_col_mean]
+        if std:
+            merge_cols.append(nueva_col_std)
+
+        datos_unidos = datos_unidos.merge(group_daily[merge_cols], on=[group, 'DATE'], how='left')
+
+    return datos_unidos
+
+
+def rolling_sales_completo(datos_unidos):
+    """
+    Dado un dataframe con las transacciones, rellena los dias que no hubo ventas para cada combinacion de 
+    SKU X STORE_ID con TOTAL_SALES = 0, calcula las medias moviles, las agrega al dataframe original y 
+    lo devuelve (sin completar)
+    """
+
+    # Guardamos el índice donde cambia la fecha para acceso rápido
+    cambios_dia = datos_unidos["DATE"].ne(datos_unidos["DATE"].shift()).to_numpy().nonzero()[0]
+    fechas_unicas = datos_unidos["DATE"].unique()
+
+    # Lista única de combinaciones SKU-STORE_ID
+    combinaciones = datos_unidos[["SKU", "STORE_ID"]].drop_duplicates()
+
+    def rellenar_faltantes(df, fecha):
+        # Todas las combinaciones para esta fecha
+        comb_fecha = combinaciones.copy()
+        comb_fecha["DATE"] = fecha
+        # Merge para meter TOTAL_SALES=0 donde falta
+        df_completo = comb_fecha.merge(df, on=["SKU", "STORE_ID", "DATE"], how="left")
+        df_completo["TOTAL_SALES"] = df_completo["TOTAL_SALES"].fillna(0)
+        return df_completo
+    
+    buffer = pd.DataFrame()
+    resultados = []
+    windows = [7, 30, 90]
+
+    for window in windows:
+        datos_unidos[f"SKU_STORE_mean_{window}D"] = pd.NA
+
+        for fecha in fechas_unicas:
+            # Datos del día actual
+            df_dia = datos_unidos.loc[datos_unidos["DATE"] == fecha, ["SKU", "STORE_ID", "DATE", "TOTAL_SALES"]]
+            df_dia_completo = rellenar_faltantes(df_dia, fecha)
+
+            # Agregar al buffer
+            buffer = pd.concat([buffer, df_dia_completo], ignore_index=True)
+
+            # Mantener sólo los últimos window+1 días (para limitar memoria)
+            if buffer["DATE"].nunique() > window+1:
+                fecha_mas_vieja = buffer["DATE"].min()
+                buffer = buffer[buffer["DATE"] != fecha_mas_vieja]
+
+            # Filas originales del día actual
+            df_original_dia = datos_unidos.loc[datos_unidos["DATE"] == fecha,
+                                            ["SKU", "STORE_ID", "DATE", "TOTAL_SALES"]]
+
+            # Calcular promedio con los días previos que haya 
+            dias_previos = sorted(buffer["DATE"].unique())[:-1]  # todos menos el actual
+            
+            if len(dias_previos) > 0:
+                # Tomar como máximo window días previos
+                dias_a_usar = dias_previos[-window:]
+                df_prev = buffer[buffer["DATE"].isin(dias_a_usar)]
+                media_prev = df_prev.groupby(["SKU", "STORE_ID"], observed=False)["TOTAL_SALES"].mean().reset_index()
+                media_prev["DATE"] = fecha
+                media_prev.rename(columns={"TOTAL_SALES": f"SKU_STORE_mean_{window}D"}, inplace=True)
+
+                # Actualizar directamente en el dataset original
+                idx_update = datos_unidos.index[datos_unidos["DATE"] == fecha]
+                merged = datos_unidos.loc[idx_update, ["SKU", "STORE_ID", "DATE"]].merge(
+                    media_prev, on=["SKU", "STORE_ID", "DATE"], how="left")
+
+                # Si no se creó la columna en el merge, la creamos con NaN
+                if f"SKU_STORE_mean_{window}D" not in merged.columns:
+                    merged[f"SKU_STORE_mean_{window}D"] = pd.NA
+
+                datos_unidos.loc[idx_update, f"SKU_STORE_mean_{window}D"] = merged[f"SKU_STORE_mean_{window}D"].values
+
+        datos_unidos.fillna({f"SKU_STORE_mean_{window}D":0}, inplace=True)
+
+    return datos_unidos
 
 
 def walk_forward_forecast(df, model, features, target, train_days=365, step_days=30, forecast_days=7):
@@ -100,7 +233,7 @@ def walk_forward_forecast(df, model, features, target, train_days=365, step_days
 
 def crear_price_grid(datos_unidos: pd.DataFrame, n_prices: int = 50):
     """
-    Devuelve dict { SKU: array_de_50_precios } usando min/max histórico por SKU.
+    Devuelve dict { SKU: array de precios posibles} usando min/max histórico por SKU.
     """
     price_ranges = datos_unidos.groupby('SKU')['PRICE'].agg(['min', 'max']).reset_index()
     price_grid = {}
@@ -202,8 +335,12 @@ def optimizacion_precios(template, model, price_grid, features, n_iter=1000,
     return mejor_y_pred, mejor_sales, mejor_gain, mejor_config
 
 
-def features_rolling_template(df, template, group, windows=[30, 90, 180]):
-    
+def rolling_sales_template(df, template, group, windows=[30, 90, 180]):
+    """
+    Dado los datos copmletos df y un template con las posibles transacciones de la siguiente semana, 
+    calcula los rolling features de TOTAL_SALES agrupados por group en distintas ventanas temporales (windows)
+    """
+
     for window in windows:
         df[f"tem_{group}_mean_{window}D"] = (
             df
@@ -256,5 +393,59 @@ def features_rolling_template(df, template, group, windows=[30, 90, 180]):
 
         # Eliminar las columnas temporales de df
         df = df.drop(columns=[f"tem_{group}_mean_{window}D", f"tem_{group}_std_{window}D"])
+
+    return template
+
+
+def crear_template(df):
+    """
+    Dado un dataframe con las transacciones, crea un dataframe template con todas las combinaciones de SKU X STORE_ID de los 
+    proximos 7 dias
+    """
+
+    columnas_extraidas = ['SKU', 'STORE_ID', 'REGION',
+       'CITY', 'STATE', 'STORE_TYPE', 'CATEGORY', 'GROUP', 'SUBGROUP', 'GROUP_TYPE',
+       'PRICE_GROUP_ID', 'BRAND', 'YEAR_OPEN', 'YEAR_CLOSE', 'MONTH_OPEN', 'MONTH_CLOSE']
+    
+    # Creamos un dataframe con todas las combinaciones de SKU X STORE_ID
+    template = df[columnas_extraidas].drop_duplicates().reset_index(drop=True)
+
+    # Agregamos los ultimos costos de los productos
+    ultimos_costos = (
+        df
+        .groupby(["SKU", "STORE_ID"], as_index=False)
+        .last()[["SKU", "STORE_ID", "COSTOS"]]
+    )
+    template = template.merge(ultimos_costos, on=["SKU", "STORE_ID"], how="left")
+
+    # Quitamos las tiendas que ya cerraron
+    # Hay 150 (numero de tiendas) . 854 (numero de sku) combinaciones
+    template = template[template["YEAR_CLOSE"] > 2023]
+
+    # Cada uno de los 7 dias tendra todas las combinaciones
+    fechas = pd.date_range(start="2024-01-01", periods=7, freq="D")
+    df_fechas = pd.DataFrame({"DATE": fechas})
+
+    template = (
+        df_fechas.assign(key=1)
+        .merge(template.assign(key=1), on="key")
+        .drop(columns="key")
+    )
+
+    # Features agregados
+    template["DATE"] = pd.to_datetime(template["DATE"])
+    template["YEAR"] = template["DATE"].dt.year
+    template["MONTH"] = template["DATE"].dt.month
+    template["DAY"] = template["DATE"].dt.day
+    template["DAY_OF_WEEK"] = template["DATE"].dt.day_name()
+    template["WEEK"] = template["DATE"].dt.isocalendar().week
+
+    cols_categoricas = ['SKU', 'STORE_ID', 'REGION',
+       'CITY', 'STATE', 'STORE_TYPE',  'CATEGORY', 'GROUP', 'SUBGROUP', 'GROUP_TYPE',
+       'PRICE_GROUP_ID', 'BRAND', "DAY_OF_WEEK"]
+
+    # Pasamos las columnas al type adecaudo
+    for col in cols_categoricas:
+        template[col] = template[col].astype("category")
 
     return template
