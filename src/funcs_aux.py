@@ -96,6 +96,7 @@ def rolling_price_pct(datos_unidos, group, windows=[7, 30, 90], std=True):
             merge_cols.append(nueva_col_std)
 
         datos_unidos = datos_unidos.merge(group_daily[merge_cols], on=[group, 'DATE'], how='left')
+    datos_unidos.drop(columns=["price_pct_change"], inplace=True)
 
     return datos_unidos
 
@@ -335,7 +336,7 @@ def optimizacion_precios(template, model, price_grid, features, n_iter=1000,
     return mejor_y_pred, mejor_sales, mejor_gain, mejor_config
 
 
-def rolling_sales_template(df, template, group, windows=[30, 90, 180]):
+def rolling_sales_template(df, template, group, windows=[30, 90, 180], std=True):
     """
     Dado los datos copmletos df y un template con las posibles transacciones de la siguiente semana, 
     calcula los rolling features de TOTAL_SALES agrupados por group en distintas ventanas temporales (windows)
@@ -348,12 +349,6 @@ def rolling_sales_template(df, template, group, windows=[30, 90, 180]):
             .transform(lambda x: x.rolling(window, min_periods=1).mean())
         )
 
-        df[f"tem_{group}_std_{window}D"] = (
-            df
-            .groupby(group)["TOTAL_SALES"]
-            .transform(lambda x: x.rolling(window, min_periods=1).std().fillna(0))
-        )
-
         # Obtener solo la última fila por group
         ultimos_promedios = (
             df
@@ -361,21 +356,10 @@ def rolling_sales_template(df, template, group, windows=[30, 90, 180]):
             .groupby(group)
             .tail(1)[[group, f"tem_{group}_mean_{window}D"]]
         )
-
-        ultimos_std = (
-            df
-            .sort_values("DATE")
-            .groupby(group)
-            .tail(1)[[group, f"tem_{group}_std_{window}D"]]
-        )
-
+           
         # Renombrar la columna para el merge
         ultimos_promedios = ultimos_promedios.rename(
             columns={f"tem_{group}_mean_{window}D": f"{group}_mean_{window}D"}
-        )
-
-        ultimos_std = ultimos_std.rename(
-            columns={f"tem_{group}_std_{window}D": f"{group}_std_{window}D"}
         )
 
         # Hacer el merge con template
@@ -385,30 +369,141 @@ def rolling_sales_template(df, template, group, windows=[30, 90, 180]):
             how="left"
         )
 
-        template = template.merge(
+        # Eliminar las columnas temporales de df
+        df.drop(columns=[f"tem_{group}_mean_{window}D"], inplace=True)
+
+        # Hacemos lo mismo con std
+        if std: 
+            df[f"tem_{group}_std_{window}D"] = (
+                df
+                .groupby(group)["TOTAL_SALES"]
+                .transform(lambda x: x.rolling(window, min_periods=1).std().fillna(0))
+            )
+
+            ultimos_std = ultimos_std.rename(
+                columns={f"tem_{group}_std_{window}D": f"{group}_std_{window}D"}
+            )
+
+            template = template.merge(
             ultimos_std,
             on=group,
             how="left"
-        )
+            )
+            
+            ultimos_std = (
+                df
+                .sort_values("DATE")
+                .groupby(group)
+                .tail(1)[[group, f"tem_{group}_std_{window}D"]]
+            )
 
-        # Eliminar las columnas temporales de df
-        df = df.drop(columns=[f"tem_{group}_mean_{window}D", f"tem_{group}_std_{window}D"])
+            df.drop(columns=[ f"tem_{group}_std_{window}D"], inplace=True)
 
     return template
 
 
-def crear_template(df):
+def rolling_price_template(df, template, group, windows=[30,90], std=True):
+    """
+    Agrega al template el promedio de los cambios porcentuales de precio (vs. primer precio del SKU)
+    de los últimos 7 días, calculado por 'group'.
+    
+    Parámetros
+    ----------
+    df : pd.DataFrame
+        Debe contener: DATE, SKU, PRICE y la columna 'group' (ej. STORE_ID, SUBGROUP).
+    template : pd.DataFrame
+        Combinaciones futuras (ej. SKU x STORE_ID) donde se agregará la columna.
+    group : str
+        Nombre de la columna por la cual agrupar (ej. 'STORE_ID', 'SUBGROUP').
+
+    Retorna
+    -------
+    pd.DataFrame
+        template con la nueva columna: f"{group}_avg_price_change_last7"
+    """
+
+    df['tem_price_pct_change'] = (
+        df.groupby('SKU')['PRICE']
+        .transform(lambda x: (x - x.iloc[0]) / x.iloc[0])
+        .astype(float)  # aseguramos tipo float
+    )
+
+    # Filtramos las ultimas fechas
+    df["DATE"] = pd.to_datetime(df["DATE"])
+    end_date = df['DATE'].max()
+    start_date = pd.Timestamp(end_date) - pd.Timedelta(days=max(windows))
+    df_ult = df[(df["DATE"] >= start_date) & (df["DATE"] <= end_date)].copy()
+
+    # Eliminar las columnas temporales de df
+    df.drop(columns=["tem_price_pct_change"], inplace=True)
+
+    for window in windows:
+        df_ult[f"tem_{group}_mean_{window}D"] = (
+                df_ult
+                .groupby(group)["tem_price_pct_change"]
+                .transform(lambda x: x.rolling(window, min_periods=1).mean())
+            )
+
+        # Obtener solo la última fila por group
+        ultimos_promedios = (
+            df_ult
+            .sort_values("DATE")
+            .groupby(group)
+            .tail(1)[[group, f"tem_{group}_mean_{window}D"]]
+        )
+           
+        # Renombrar la columna para el merge
+        ultimos_promedios = ultimos_promedios.rename(
+            columns={f"tem_{group}_mean_{window}D": f'{group}_price_pct_mean_{window}D'}
+        )
+
+        # Hacer el merge con template
+        template = template.merge(
+            ultimos_promedios,
+            on=group,
+            how="left"
+        )
+
+        # Hacemos lo mismo con std
+        if std: 
+            df_ult[f"tem_{group}_std_{window}D"] = (
+                df_ult
+                .groupby(group)["tem_price_pct_change"]
+                .transform(lambda x: x.rolling(window, min_periods=1).std().fillna(0))
+            )
+
+            ultimos_std = (
+                df_ult
+                .sort_values("DATE")
+                .groupby(group)
+                .tail(1)[[group, f"tem_{group}_std_{window}D"]]
+            )
+
+            ultimos_std = ultimos_std.rename(
+                columns={f"tem_{group}_std_{window}D": f'{group}_price_pct_std_{window}D'}
+            )
+
+            template = template.merge(
+            ultimos_std,
+            on=group,
+            how="left"
+            )
+
+    return template
+
+
+def crear_template(df, columnas_extraidas, cols_categoricas):
     """
     Dado un dataframe con las transacciones, crea un dataframe template con todas las combinaciones de SKU X STORE_ID de los 
     proximos 7 dias
     """
-
-    columnas_extraidas = ['SKU', 'STORE_ID', 'REGION',
-       'CITY', 'STATE', 'STORE_TYPE', 'CATEGORY', 'GROUP', 'SUBGROUP', 'GROUP_TYPE',
-       'PRICE_GROUP_ID', 'BRAND', 'YEAR_OPEN', 'YEAR_CLOSE', 'MONTH_OPEN', 'MONTH_CLOSE']
     
     # Creamos un dataframe con todas las combinaciones de SKU X STORE_ID
     template = df[columnas_extraidas].drop_duplicates().reset_index(drop=True)
+
+    # Quitamos las tiendas que ya cerraron
+    # Hay 150 (numero de tiendas) . 854 (numero de sku) combinaciones
+    template = template[template["YEAR_CLOSE"] > 2023]
 
     # Agregamos los ultimos costos de los productos
     ultimos_costos = (
@@ -418,9 +513,7 @@ def crear_template(df):
     )
     template = template.merge(ultimos_costos, on=["SKU", "STORE_ID"], how="left")
 
-    # Quitamos las tiendas que ya cerraron
-    # Hay 150 (numero de tiendas) . 854 (numero de sku) combinaciones
-    template = template[template["YEAR_CLOSE"] > 2023]
+    
 
     # Cada uno de los 7 dias tendra todas las combinaciones
     fechas = pd.date_range(start="2024-01-01", periods=7, freq="D")
@@ -439,10 +532,6 @@ def crear_template(df):
     template["DAY"] = template["DATE"].dt.day
     template["DAY_OF_WEEK"] = template["DATE"].dt.day_name()
     template["WEEK"] = template["DATE"].dt.isocalendar().week
-
-    cols_categoricas = ['SKU', 'STORE_ID', 'REGION',
-       'CITY', 'STATE', 'STORE_TYPE',  'CATEGORY', 'GROUP', 'SUBGROUP', 'GROUP_TYPE',
-       'PRICE_GROUP_ID', 'BRAND', "DAY_OF_WEEK"]
 
     # Pasamos las columnas al type adecaudo
     for col in cols_categoricas:
