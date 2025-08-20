@@ -152,45 +152,96 @@ precio, costo, cantidad vendida (en unidades y en total), categorías del produc
 Por otro lado, descartamos ciertos outliers que consideramos que podían llegar a cesgar al modelo: transacciones con precios, 
 cantidad vendida unitaria o cantidad vendida total fuera del 99.9\% quantile.
 
+\vspace{0.2cm}
 
+\subsection{Análisis de Correlación entre Subgrupos}
+
+En un principio, consideramos entrenar un modelo especializado para cada serie SKU-tienda o subgrupo-tienda. Esto tendría como ventaja modelos más simples, pero la desventaja era perder información cruzada entre grupos. Esto nos llevó a preguntarnos si existía correlación entre dichos grupos.  
+Si los grupos fueran suficientemente independientes, no habría relación cruzada y tendría sentido entrenar un modelo especializado por serie. Para evaluarlo, primero calculamos la correlación de Pearson, la cual mide relaciones lineales, y vimos que pocos subgrupos estaban fuertemente correlacionados.  
+Sin embargo, como Pearson solo captura correlaciones lineales, decidimos calcular también la correlación de Spearman y Kendall, métricas que permiten detectar relaciones monótonas entre variables, es decir, si tienden a moverse en la misma dirección aunque no sean lineales.  
+Este análisis mostró que en gran cantidad de grupos sí existía correlación, ya sea directa o inversa. Por lo tanto, concluimos que ignorar estas interacciones no sería lo más adecuado, y optamos por entrenar un modelo global capaz de captarlas y generalizarlas.
 
 \subsection{Modelo Predictivo}
 
-El modelo que mejores resultados nos proporcionó fue el LightGBM, el cual es un modelo de boosting que utiliza árboles de decisión y 
-es capaz de manejas grandes volúmenes de datos de manera eficiente.
+    \subsubsection{Exploración de modelos}
 
-\vspace{0.2cm}
+    En una primera instancia, realizamos una etapa de investigación en la cual buscamos qué modelos se implementan en la industria para abordar la problemática de pronóstico de demanda y estrategia de precios. Encontramos distintos artículos que mencionaban enfoques experimentales y tradicionales en mayor o menor medida. Decidimos probar al menos un modelo de cada una de las siguientes familias:
+    - Boosting
+    - Regresiones
+    - Deep Learning
 
-En primera instancia, utilizamos las transacciones dadas para entrenar el modelo, pero esto provocaba que después a la hora de 
-predecir la demanda por producto y tienda, el modelo no tuviera en cuenta los días en que no hubo ventas y sobreestimara por mucho 
-la demanda. Por lo tanto, decidimos crear un dataframe con todas las combinaciones posibles de fechas, productos y tiendas, y completar 
-los días en que no hubo ventas con un valor 0 en la cantidad vendida total.
+    A continuación, se describen los distintos enfoques y pruebas realizadas durante esta etapa de exploración.
 
-\vspace{0.2cm}
+        \subsubsection{Regresiones}
 
-Además, a partir del dataframe completo, para que el modelo pueda entender mejor la estacionalidad de la demanda, 
-creamos nuevos lagging features: agrupamos las transacciones por producto y calculamos 
-una media móvil de la cantidad vendida total y su desviación estándar de los últimos días, para distintas ventanas temporales. 
-Hicimos lo mismo pero agrupando por tienda, como también por subgrupo de productos.
+        Como primera aproximación, entrenamos dos regresiones: una lineal y una polinómica. La regresión lineal no nos proporcionó un buen ajuste y presentó un $R^2$  muy bajo, ya que es un modelo simple incapaz de captar relaciones no lineales entre las variables y el target. 
+        Intentamos reducir la dimensionalidad evaluando la correlación de Pearson de las variables numéricas con el target ademas de la varianza del target explicada por las valiables categoricas para ver cuan "unidas" estaban estas. Esto mostró que muy pocas variables numericas mantenían una relación lineal superior a 0.6, por lo que entrenar un modelo lineal únicamente con esas variables le habría restado información relevante del problema.
+        Y las variables categoricas que tenian una relacion mas fuerte con el target, no se trataba de una relacion precisamente lineal, por ende el modelo no podia capturar bien estas dinamicas.
 
-\vspace{0.2cm}
+        \vspace{0.2cm}
 
-Por otro lado, para que el modelo pueda relacionar mejor el precio y la demanda, creamos otros lagging features sobre los precios: 
-agrupando las transacciones por producto, calculamos la media móvil y desviación estándar del cambio porcentual del precio de los 
-últimos días, para distintas ventanas temporales. También hicimos lo mismo, pero agrupando por subgrupo de productos.
+        Por otro lado, entrenamos una regresión polinómica de grado 2, elegida para minimizar el riesgo de sobreajuste. Se utilizó un 80\% de los datos para entrenamiento y un 20\% para test, obteniendo un $R^2$  de 0.94 en el entrenamiento. Sin embargo, esto nos generó sospechas, ya que era extraño que un modelo tan simple explicara tan bien la varianza del target.  
+        Realizando un entrenamiento walk-forward con expanding window, observamos que las métricas de entrenamiento fluctuaban mucho en cada iteración, confirmando que el modelo no era robusto y que el alto $R^2$  inicial era señal de sobreajuste.
+        Estos modelos, al no ser estrictamente de series temporales, permitían trabajar con datos faltantes. Aun así, probamos agregar rolling features para que el modelo captara mejor la dinámica temporal: medias móviles y desviaciones estándar calculadas sobre datos anteriores, en ventanas de 7, 90 y 180 días, agrupadas por subgrupo, por serie SKU-tienda, y considerando o no los datos faltantes.  
+        También evaluamos distintas codificaciones para variables categóricas, incluyendo One-Hot Encoding y Target Encoding, siendo esta última preferida por reducir el tamaño del dataset codificado. Todas estas aproximaciones no mejoraron el desempeño del modelo.
 
-\vspace{0.2cm}
+        \subsubsection{Deep Learning}
 
-Entonces, con el dataframe completo y los features agregados, comenzamos a probar el modelo. Para esto, no podíamos emplear un cross-validation 
-convencional, dado que los lagging features hubieran generado data leakage, por lo que decidimos hacer un walk-forward validation: 
-entrenar el modelo con los datos del primer año, predecir la demanda de la próxima semana, guardar las predicciones y compararlas con 
-las ventas reales, y luego sumar 30 días a los datos de entrenamiento y repetir el proceso. De esta manera, podemos evaluar la performance del 
-modelo prediciendo la demanda de la próxima semana, tal como se haría si tuviéramos que hacerlo en tiempo real.
+        Para la familia de modelos de Deep Learning pasamos por 2 opciones:
 
-\vspace{0.2cm}
+        \vspace{0.2cm}
 
-El fine-tuning del modelo se debió hacer de manera manual, puesto que el entrenamiento de cada modelo tenía un gran costo computacional 
-y, por lo tanto, un Grid Search no era viable con los recursos disponibles.
+        En un principio, evaluamos la posibilidad de implementar una Graph Neural Network. Esta idea nos resultaba atractiva, ya que con los grafos podríamos modelar dinámicas espaciales entre las features, como las relaciones entre tiendas.
+        Sin embargo, decidimos descartarla debido a su complejidad: era necesario calcular una matriz de adyacencia que representara adecuadamente el grafo y no encontramos suficiente material sobre la aplicación de estas redes a nuestro problema, ni implementaciones disponibles.
+        Además, trabajar con este modelo requería operar a un nivel más bajo y definir cuidadosamente cómo manejar las variables categóricas para que contribuyeran al entrenamiento.
+
+        \vspace{0.2cm}
+
+        También experimentamos con algunos modelos de la librería PyTorch Forecasting, que ofrece modelos muy potentes basados en diferentes filosofías, como la atención y la descomposición de series temporales. Además, permite el manejo de embeddings aprendidos para variables categóricas, lo cual resultaba ideal para nuestro problema.
+        De esta librería probamos el modelo NHITS, que se basa en la descomposición de series para realizar predicciones. Sin embargo, esta no fue nuestra solución final debido a algunas problemáticas. Al tratarse de modelos para series temporales, el modelo necesitaba ver todas las series completas (SKU-STORE\_ID-DATE-DATE) para predecir correctamente.  
+        Para afrontar esto, intentamos un llenado de batches "on the fly", ya que rellenar todo el dataset con todas las combinaciones posibles era inviable computacionalmente: nuestro dataset sería demasiado pesado para la RAM y aún así requeriría recursos adicionales para el entrenamiento.  
+        El llenado "on the fly" consistía en crear nuestra propia clase, que heredaba de la clase original pero sobreescribía uno de sus métodos. De este modo, cada vez que se tomaba un batch, se generaba un rango de fechas y se completaban con ceros los días sin ventas, permitiendo que el modelo viera las series completas sin saturar la memoria. Además, esta clase nos permitía entrenar cualquier modelo de la librería con la misma estrategia.
+        Sin embargo, esta aproximación presentó varios problemas debido a la interacción de métodos entre nuestra clase personalizada y la original, sumado a nuestro desconocimiento del funcionamiento interno de la librería y la estructura de datos. Por estas razones, decidimos volver a un modelo más simple.
+
+        \vspace{0.2cm}
+
+        \subsubsection{Boosting}
+
+        El modelo que mejores resultados nos proporcionó fue el LightGBM, el cual es un modelo de boosting que utiliza árboles de decisión y 
+        es capaz de manejas grandes volúmenes de datos de manera eficiente.
+
+        \vspace{0.2cm}
+
+    En primera instancia, utilizamos las transacciones dadas para entrenar el modelo, pero esto provocaba que después a la hora de 
+    predecir la demanda por producto y tienda, el modelo no tuviera en cuenta los días en que no hubo ventas y sobreestimara por mucho 
+    la demanda. Por lo tanto, decidimos crear un dataframe con todas las combinaciones posibles de fechas, productos y tiendas, y completar 
+    los días en que no hubo ventas con un valor 0 en la cantidad vendida total.
+
+    \vspace{0.2cm}
+
+    Además, a partir del dataframe completo, para que el modelo pueda entender mejor la estacionalidad de la demanda, 
+    creamos nuevos lagging features: agrupamos las transacciones por producto y calculamos 
+    una media móvil de la cantidad vendida total y su desviación estándar de los últimos días, para distintas ventanas temporales. 
+    Hicimos lo mismo pero agrupando por tienda, como también por subgrupo de productos.
+
+    \vspace{0.2cm}
+
+    Por otro lado, para que el modelo pueda relacionar mejor el precio y la demanda, creamos otros lagging features sobre los precios: 
+    agrupando las transacciones por producto, calculamos la media móvil y desviación estándar del cambio porcentual del precio de los 
+    últimos días, para distintas ventanas temporales. También hicimos lo mismo, pero agrupando por subgrupo de productos.
+
+    \vspace{0.2cm}
+
+    Entonces, con el dataframe completo y los features agregados, comenzamos a probar el modelo. Para esto, no podíamos emplear un cross-validation 
+    convencional, dado que los lagging features hubieran generado data leakage, por lo que decidimos hacer un walk-forward validation: 
+    entrenar el modelo con los datos del primer año, predecir la demanda de la próxima semana, guardar las predicciones y compararlas con 
+    las ventas reales, y luego sumar 30 días a los datos de entrenamiento y repetir el proceso. De esta manera, podemos evaluar la performance del 
+    modelo prediciendo la demanda de la próxima semana, tal como se haría si tuviéramos que hacerlo en tiempo real.
+
+    \vspace{0.2cm}
+
+    El fine-tuning del modelo se debió hacer de manera manual, puesto que el entrenamiento de cada modelo tenía un gran costo computacional 
+    y, por lo tanto, un Grid Search no era viable con los recursos disponibles.
 
 
 
