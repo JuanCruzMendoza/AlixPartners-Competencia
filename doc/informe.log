@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.4.21)  19 AUG 2025 17:19
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.4.21)  20 AUG 2025 10:49
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -81,20 +81,20 @@ Package: lipsum 2021-09-20 v2.7 150 paragraphs of Lorem Ipsum dummy text
  (c:/texlive/2025/texmf-dist/tex/latex/lipsum/lipsum.ltd.tex)) (./informe.aux)
 \openout1 = `informe.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 10.
-LaTeX Font Info:    ... okay on input line 10.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 10.
-LaTeX Font Info:    ... okay on input line 10.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 10.
-LaTeX Font Info:    ... okay on input line 10.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 10.
-LaTeX Font Info:    ... okay on input line 10.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 10.
-LaTeX Font Info:    ... okay on input line 10.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 10.
-LaTeX Font Info:    ... okay on input line 10.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 10.
-LaTeX Font Info:    ... okay on input line 10.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 11.
+LaTeX Font Info:    ... okay on input line 11.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 11.
+LaTeX Font Info:    ... okay on input line 11.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 11.
+LaTeX Font Info:    ... okay on input line 11.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 11.
+LaTeX Font Info:    ... okay on input line 11.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 11.
+LaTeX Font Info:    ... okay on input line 11.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 11.
+LaTeX Font Info:    ... okay on input line 11.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 11.
+LaTeX Font Info:    ... okay on input line 11.
  (c:/texlive/2025/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count278
@@ -152,47 +152,86 @@ File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
 
 [1
 
-{c:/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] (./informe.toc)
+{c:/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] (./informe.toc
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <12> on input line 4.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <8> on input line 4.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <6> on input line 4.
+)
 \tf@toc=\write3
 \openout3 = `informe.toc'.
 
 
 
 [1]
-<graficos/ganancia_diaria_total.png, id=12, 867.24pt x 433.62pt>
+
+[2]
+<graficos/ganancia_diaria_total.png, id=15, 867.24pt x 433.62pt>
 File: graficos/ganancia_diaria_total.png Graphic file (type png)
 <use graficos/ganancia_diaria_total.png>
-Package pdftex.def Info: graficos/ganancia_diaria_total.png  used on input line 61.
+Package pdftex.def Info: graficos/ganancia_diaria_total.png  used on input line 64.
 (pdftex.def)             Requested size: 546.29153pt x 273.15558pt.
-
-
-[2 <./graficos/ganancia_diaria_total.png>]
-<graficos/demanda_promedio_semanal_por_categoria.png, id=18, 867.24pt x 433.62pt>
+<graficos/demanda_promedio_semanal_por_categoria.png, id=17, 867.24pt x 433.62pt>
 File: graficos/demanda_promedio_semanal_por_categoria.png Graphic file (type png)
 <use graficos/demanda_promedio_semanal_por_categoria.png>
-Package pdftex.def Info: graficos/demanda_promedio_semanal_por_categoria.png  used on input line 75.
+Package pdftex.def Info: graficos/demanda_promedio_semanal_por_categoria.png  used on input line 78.
 (pdftex.def)             Requested size: 546.29153pt x 273.15558pt.
 
 
-[3{c:/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc} <./graficos/demanda_promedio_semanal_por_categoria.png>] (./informe.aux)
+[3 <./graficos/ganancia_diaria_total.png>]
+<graficos/evolucion_porcentual_precios.png, id=22, 867.24pt x 433.62pt>
+File: graficos/evolucion_porcentual_precios.png Graphic file (type png)
+<use graficos/evolucion_porcentual_precios.png>
+Package pdftex.def Info: graficos/evolucion_porcentual_precios.png  used on input line 94.
+(pdftex.def)             Requested size: 455.24411pt x 227.62082pt.
+
+
+[4{c:/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc} <./graficos/demanda_promedio_semanal_por_categoria.png> <./graficos/evolucion_porcentual_precios.png>]
+<graficos/precios_sku_BEAHASH009.png, id=29, 867.24pt x 433.62pt>
+File: graficos/precios_sku_BEAHASH009.png Graphic file (type png)
+<use graficos/precios_sku_BEAHASH009.png>
+Package pdftex.def Info: graficos/precios_sku_BEAHASH009.png  used on input line 106.
+(pdftex.def)             Requested size: 455.24411pt x 227.62082pt.
+<graficos/ganancia_porcentual_por_categoria.png, id=30, 867.24pt x 433.62pt>
+File: graficos/ganancia_porcentual_por_categoria.png Graphic file (type png)
+<use graficos/ganancia_porcentual_por_categoria.png>
+Package pdftex.def Info: graficos/ganancia_porcentual_por_categoria.png  used on input line 115.
+(pdftex.def)             Requested size: 455.24411pt x 227.62082pt.
+
+
+[5 <./graficos/precios_sku_BEAHASH009.png> <./graficos/ganancia_porcentual_por_categoria.png>]
+
+[6]
+<graficos/precios_sku_BEAHASH009_filtrado.png, id=40, 867.24pt x 433.62pt>
+File: graficos/precios_sku_BEAHASH009_filtrado.png Graphic file (type png)
+<use graficos/precios_sku_BEAHASH009_filtrado.png>
+Package pdftex.def Info: graficos/precios_sku_BEAHASH009_filtrado.png  used on input line 212.
+(pdftex.def)             Requested size: 455.24411pt x 227.62082pt.
+
+
+[7 <./graficos/precios_sku_BEAHASH009_filtrado.png>]
+
+[8] (./informe.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-03-26>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 2359 strings out of 469625
- 41877 string characters out of 5475162
- 515166 words of memory out of 5000000
- 29184 multiletter control sequences out of 15000+600000
- 628979 words of font info for 47 fonts, out of 8000000 for 9000
+ 2407 strings out of 469625
+ 43453 string characters out of 5475162
+ 518168 words of memory out of 5000000
+ 29225 multiletter control sequences out of 15000+600000
+ 632022 words of font info for 57 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 73i,5n,77p,296b,201s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 73i,5n,77p,336b,201s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb>
-Output written on informe.pdf (4 pages, 1686862 bytes).
+Output written on informe.pdf (9 pages, 5379266 bytes).
 PDF statistics:
- 43 PDF objects out of 1000 (max. 8388607)
- 24 compressed objects within 1 object stream
+ 68 PDF objects out of 1000 (max. 8388607)
+ 36 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 11 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 31 words of extra memory for PDF output out of 10000 (max. 10000000)
 

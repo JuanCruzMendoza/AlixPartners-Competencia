@@ -1,4 +1,7 @@
 \contentsline {section}{\numberline {1}Introducción}{2}{}%
-\contentsline {section}{\numberline {2}Análisis Económico}{2}{}%
-\contentsline {section}{\numberline {3}Análisis Técnico}{3}{}%
-\contentsline {section}{\numberline {4}Consideraciones Finales}{3}{}%
+\contentsline {section}{\numberline {2}Análisis Económico}{3}{}%
+\contentsline {section}{\numberline {3}Análisis Técnico}{6}{}%
+\contentsline {subsection}{\numberline {3.1}Preprocesamiento de Datos}{6}{}%
+\contentsline {subsection}{\numberline {3.2}Modelo Predictivo}{6}{}%
+\contentsline {subsection}{\numberline {3.3}Optimización de Precios}{7}{}%
+\contentsline {section}{\numberline {4}Consideraciones Finales}{8}{}%
