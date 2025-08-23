@@ -41,8 +41,8 @@ partir del precio y otras variables, y con el mismo, optimizar los precios para 
 Dado que desconocemos si el cliente tiene conocimientos técnicos acerca de programación y desarrollo de modelos de AI, 
 hemos decidido dividir este informe en dos secciones: por un lado, un análisis económico, el cual no necesita conocimientos técnicos para ser entendido, 
 donde realizamos un análisis de datos básico y exponemos una estrategia de precios que, según las predicciones hechas, debería aumentar las ganancias; 
-y por otro lado, realizamos un análisis técnico, en donde detallamos el preprocesamiento de datos, la construcción y entrenamiento del modelo predictivo 
-y la metodología de optimización de precios.
+y por otro lado, realizamos un análisis técnico, en donde detallamos el preprocesamiento de datos, la construcción y entrenamiento de los modelos predictivos, 
+la metodología de optimización de precios y una interpretación del mejor modelo entrenado.
 
 \vspace{0.2cm}
 
@@ -57,10 +57,9 @@ Además, todo el código fuente utilizado para el trabajo está disponible adjun
 En primer lugar, nos preguntamos por qué se ha producido una caída de las ganancias y qué tan grave es. Para esto, se puede observar 
 en el siguiente gráfico cómo fue evolucionando la ganancia total de la empresa a lo largo del tiempo, y cómo la misma ha ido disminuyendo de a poco 
 en el transcurso del tiempo.
-
 \begin{center}
     \makebox[\textwidth][c]{%
-        \includegraphics[width=1.2\textwidth]{graficos/ganancia_diaria_total.png}%
+        \includegraphics[width=1.1\textwidth]{graficos/ganancia_diaria_total.png}%
     }
 \end{center}
 
@@ -71,7 +70,6 @@ lo cual puede resultar preocupante.
 
 Este fenómeno puede deberse en gran parte a la reducción de la demanda total, que ha disminuído 10\% el primer año y un 21.2\% en el segundo año. 
 Esto se puede apreciar en el siguiente gráfico, además de cómo varía la demanda según la categoría de los productos:
-
 \begin{center}
     \makebox[\textwidth][c]{%
         \includegraphics[width=1.2\textwidth]{graficos/demanda_promedio_semanal_por_categoria.png}%
@@ -80,7 +78,7 @@ Esto se puede apreciar en el siguiente gráfico, además de cómo varía la dema
 
 Al comparar este último gráfico con el de las ganancias totales, se pueden observar 3 comportamientos similares: 
 \begin{itemize}
-    \item A nivel global, hay una reducción gradual de las ganancias y la demanda 
+    \item A nivel global, hay una reducción gradual de las ganancias y la demanda.
     \item En cada año, en general hay un incremento a medida que transcurre el año y un descenso a principios de cada año.
     \item En Mayo, Junio y Agosto hay caídas abruptas, mientras que en Diciembre hay un incremento sustancial, seguramente debido a las festividades.
 \end{itemize}
@@ -102,7 +100,7 @@ momentos, hay caídas abruptas en los precios, como se muestra a continuación.
 
 \begin{center}
     \makebox[\textwidth][c]{%
-        \includegraphics[width=1\textwidth]{graficos/precios_sku_BEAHASH009.png}%
+        \includegraphics[width=0.8\textwidth]{graficos/precios_sku_BEAHASH009.png}%
     }
 \end{center}
 
@@ -111,7 +109,16 @@ manera, puesto que las ganancias están constituídas mayormente por productos d
 
 \begin{center}
     \makebox[\textwidth][c]{%
-        \includegraphics[width=1\textwidth]{graficos/ganancia_porcentual_por_categoria.png}%
+        \includegraphics[width=0.8\textwidth]{graficos/ganancia_porcentual_por_categoria.png}%
+    }
+\end{center}
+
+Cabe resaltar también que hay un gran desbalance de las ganancias por región y que el mismo 
+se mantiene en todos los años:
+
+\begin{center}
+    \makebox[\textwidth][c]{%
+        \includegraphics[width=0.8\textwidth]{graficos/ganancia_porcentual_por_region.png}%
     }
 \end{center}
 
@@ -120,7 +127,43 @@ a una falla en la carga de datos o a que el producto no se comercializa en las t
 
 \vspace{0.2cm}
 
-Teniendo en cuenta todo lo anterior, 
+\newpage
+
+La última observación que podemos hacer es que la demanda es muy sensible a los precios. Como se aprecia en el siguiente gráfico, 
+la elasticidad en promedio es de aproximadamente 10, es decir, un aumento del 1\% en los precios implica una reducción del 
+10\% en la demanda, y viceversa. Por lo tanto, cualquier estrategia de precios que se aplique debe tener en cuenta 
+esta sensibilidad.
+
+\begin{center}
+    \makebox[\textwidth][c]{%
+        \includegraphics[width=0.8\textwidth]{graficos/relacion_precio_demanda.png}%
+    }
+\end{center}
+
+
+Teniendo en cuenta todo lo anterior, construímos un modelo de inteligencia artificial capaz de predecir, con cierto margen 
+de error, la demanda diaria de cada producto. De esta manera, pudimos simular qué precios serían los mejores para maximizar las ganancias de la próxima semana. 
+Los mismos se encuentran en la carpeta "resultados" adjunto a este informe, en donde se indica para cada producto el precio óptimo. 
+
+Además, para simplificar las modificaciones reales de los mismos, decidimos que todas las tiendas 
+tengan el mismo precio para cada producto.
+
+\vspace{0.2cm}
+
+Veamos a grandes rasgos qué cambios se harían, viendo solamente en porcentaje promedio cuánto se debería 
+aumentar o disminuir cada categoría:
+\begin{center}
+    \makebox[\textwidth][c]{%
+        \includegraphics[width=0.8\textwidth]{graficos/cambios_nuevos_precios.png}%
+    }
+\end{center}
+
+Podemos notar que los cambios no son tan significativos, dado que el máximo sólo supera por poco el 2\%. Sin embargo, 
+las ventas esperadas sí se modifican sustancialmente: las ventas semanales promedio del último mes fueron de \$11.9 millones, 
+mientras que las ventas esperadas por el modelo que empleamos con la configuración de precios propuesta es de \$16.7 millones, lo cual 
+representa un aumento casi del 40\%. 
+
+Por lo tanto, con esta metodología eventualmente se podría volver al nivel de ganancias del 2021, e incluso mejorarlo.
 
 
 
@@ -140,7 +183,7 @@ Teniendo en cuenta todo lo anterior,
 Comenzamos el trabajo explorando los datos proporcionados y completando los datos faltantes. Después, nos quedamos con aquellas 
 columnas que consideramos relevantes para el modelo e intentamos unir los 6 archivos csv en un mismo dataframe, sin embargo, 
 los datos de los clientes no pudieron ser utilizados dado que las transacciones no contaban con el ID de cliente, por lo que no 
-fue posible hacer unirlos. 
+fue posible unirlos. 
 
 \vspace{0.2cm}
 
@@ -157,58 +200,48 @@ cantidad vendida unitaria o cantidad vendida total fuera del 99.9\% quantile.
 \subsection{Análisis de Correlación entre Subgrupos}
 
 En un principio, consideramos entrenar un modelo especializado para cada serie SKU-tienda o subgrupo-tienda. Esto tendría como ventaja modelos más simples, pero la desventaja era perder información cruzada entre grupos. Esto nos llevó a preguntarnos si existía correlación entre dichos grupos.  
-Si los grupos fueran suficientemente independientes, no habría relación cruzada y tendría sentido entrenar un modelo especializado por serie. Para evaluarlo, primero calculamos la correlación de Pearson, la cual mide relaciones lineales, y vimos que pocos subgrupos estaban fuertemente correlacionados.  
-Sin embargo, como Pearson solo captura correlaciones lineales, decidimos calcular también la correlación de Spearman y Kendall, métricas que permiten detectar relaciones monótonas entre variables, es decir, si tienden a moverse en la misma dirección aunque no sean lineales.  
+Si los mismos fueran independientes, no habría relación cruzada y tendría sentido entrenar un modelo especializado por serie. 
+
+Para evaluarlo, primero calculamos la correlación de Pearson, la cual mide relaciones lineales, y vimos que pocos subgrupos estaban fuertemente correlacionados.  
+Sin embargo, como Pearson sólo captura correlaciones lineales, decidimos calcular también la correlación de Spearman y Kendall, métricas que permiten detectar relaciones monótonas entre variables, es decir, si tienden a moverse en la misma dirección aunque no sean lineales.  
 Este análisis mostró que en gran cantidad de grupos sí existía correlación, ya sea directa o inversa. Por lo tanto, concluimos que ignorar estas interacciones no sería lo más adecuado, y optamos por entrenar un modelo global capaz de captarlas y generalizarlas.
 
 \subsection{Modelo Predictivo}
 
     \subsubsection{Exploración de modelos}
 
-    En una primera instancia, realizamos una etapa de investigación en la cual buscamos qué modelos se implementan en la industria para abordar la problemática de pronóstico de demanda y estrategia de precios. Encontramos distintos artículos que mencionaban enfoques experimentales y tradicionales en mayor o menor medida. Decidimos probar al menos un modelo de cada una de las siguientes familias:
-    - Boosting
-    - Regresiones
-    - Deep Learning
+    En una primera instancia, realizamos una etapa de investigación en la cual buscamos qué modelos se implementan en la industria para abordar la problemática de pronóstico de demanda y estrategia de precios. Decidimos probar al menos un 
+    modelo de cada una de las siguientes familias: Regresiones, Boosting y Deep Learning.
 
     A continuación, se describen los distintos enfoques y pruebas realizadas durante esta etapa de exploración.
 
+    \newpage
+
         \subsubsection{Regresiones}
 
-        Como primera aproximación, entrenamos dos regresiones: una lineal y una polinómica. La regresión lineal no nos proporcionó un buen ajuste y presentó un $R^2$  muy bajo, ya que es un modelo simple incapaz de captar relaciones no lineales entre las variables y el target. 
-        Intentamos reducir la dimensionalidad evaluando la correlación de Pearson de las variables numéricas con el target ademas de la varianza del target explicada por las valiables categoricas para ver cuan "unidas" estaban estas. Esto mostró que muy pocas variables numericas mantenían una relación lineal superior a 0.6, por lo que entrenar un modelo lineal únicamente con esas variables le habría restado información relevante del problema.
-        Y las variables categoricas que tenian una relacion mas fuerte con el target, no se trataba de una relacion precisamente lineal, por ende el modelo no podia capturar bien estas dinamicas.
+        Como primera aproximación, entrenamos dos regresiones: una lineal y una polinomial. Estos modelos, al no ser estrictamente de series temporales, permitían que no fuera necesario completar el dataset con los días en que no hubo ventas 
+        de un producto. Aun así, probamos agregar lagging features para que el modelo captara mejor la dinámica temporal: medias móviles y desviaciones estándar calculadas sobre datos anteriores, en diferentes ventanas de tiempo, agrupadas por subgrupo o por serie SKU-tienda, y considerando o no los datos faltantes.  
+        También evaluamos distintas codificaciones para variables categóricas, incluyendo One-Hot Encoding y Target Encoding, siendo esta última preferida por reducir el tamaño del dataset codificado.
 
-        \vspace{0.2cm}
-
-        Por otro lado, entrenamos una regresión polinómica de grado 2, elegida para minimizar el riesgo de sobreajuste. Se utilizó un 80\% de los datos para entrenamiento y un 20\% para test, obteniendo un $R^2$  de 0.94 en el entrenamiento. Sin embargo, esto nos generó sospechas, ya que era extraño que un modelo tan simple explicara tan bien la varianza del target.  
-        Realizando un entrenamiento walk-forward con expanding window, observamos que las métricas de entrenamiento fluctuaban mucho en cada iteración, confirmando que el modelo no era robusto y que el alto $R^2$  inicial era señal de sobreajuste.
-        Estos modelos, al no ser estrictamente de series temporales, permitían trabajar con datos faltantes. Aun así, probamos agregar rolling features para que el modelo captara mejor la dinámica temporal: medias móviles y desviaciones estándar calculadas sobre datos anteriores, en ventanas de 7, 90 y 180 días, agrupadas por subgrupo, por serie SKU-tienda, y considerando o no los datos faltantes.  
-        También evaluamos distintas codificaciones para variables categóricas, incluyendo One-Hot Encoding y Target Encoding, siendo esta última preferida por reducir el tamaño del dataset codificado. Todas estas aproximaciones no mejoraron el desempeño del modelo.
+        Sin embargo, como era de esperar, la performance de estos modelos fue muy baja y decidimos descartarlos y probar modelos más complejos.
 
         \subsubsection{Deep Learning}
 
-        Para la familia de modelos de Deep Learning pasamos por 2 opciones:
-
+        Para la familia de Deep Learning, experimentamos con algunos modelos de la librería PyTorch Forecasting, que ofrece modelos muy potentes especializados en series temporales. 
+        Además, permite el manejo de embeddings aprendidos para variables categóricas, lo cual resultaba ideal para nuestro problema, puesto que por la cantidad de categorías distintas un One-Hot Encoding aumenta demasiado la dimensionalidad del problema.
+        
         \vspace{0.2cm}
 
-        En un principio, evaluamos la posibilidad de implementar una Graph Neural Network. Esta idea nos resultaba atractiva, ya que con los grafos podríamos modelar dinámicas espaciales entre las features, como las relaciones entre tiendas.
-        Sin embargo, decidimos descartarla debido a su complejidad: era necesario calcular una matriz de adyacencia que representara adecuadamente el grafo y no encontramos suficiente material sobre la aplicación de estas redes a nuestro problema, ni implementaciones disponibles.
-        Además, trabajar con este modelo requería operar a un nivel más bajo y definir cuidadosamente cómo manejar las variables categóricas para que contribuyeran al entrenamiento.
-
-        \vspace{0.2cm}
-
-        También experimentamos con algunos modelos de la librería PyTorch Forecasting, que ofrece modelos muy potentes basados en diferentes filosofías, como la atención y la descomposición de series temporales. Además, permite el manejo de embeddings aprendidos para variables categóricas, lo cual resultaba ideal para nuestro problema.
-        De esta librería probamos el modelo NHITS, que se basa en la descomposición de series para realizar predicciones. Sin embargo, esta no fue nuestra solución final debido a algunas problemáticas. Al tratarse de modelos para series temporales, el modelo necesitaba ver todas las series completas (SKU-STORE\_ID-DATE-DATE) para predecir correctamente.  
-        Para afrontar esto, intentamos un llenado de batches "on the fly", ya que rellenar todo el dataset con todas las combinaciones posibles era inviable computacionalmente: nuestro dataset sería demasiado pesado para la RAM y aún así requeriría recursos adicionales para el entrenamiento.  
-        El llenado "on the fly" consistía en crear nuestra propia clase, que heredaba de la clase original pero sobreescribía uno de sus métodos. De este modo, cada vez que se tomaba un batch, se generaba un rango de fechas y se completaban con ceros los días sin ventas, permitiendo que el modelo viera las series completas sin saturar la memoria. Además, esta clase nos permitía entrenar cualquier modelo de la librería con la misma estrategia.
-        Sin embargo, esta aproximación presentó varios problemas debido a la interacción de métodos entre nuestra clase personalizada y la original, sumado a nuestro desconocimiento del funcionamiento interno de la librería y la estructura de datos. Por estas razones, decidimos volver a un modelo más simple.
-
+        De esta librería probamos el modelo NHITS, que se basa en la descomposición de series para realizar predicciones. Sin embargo, esta no fue nuestra solución final debido a algunas problemáticas. Al tratarse de modelos para series temporales, el modelo 
+        necesitaba ver todas las series completas (es decir, los días en que no hubo ventas para 
+        cada producto y cada tienda). Así, terminábamos con un dataset muy grande con muchas series temporales, por que el entrenamiento del modelo era bastante costoso y difícil de efectuarle un fine-tuning adecuado. 
+        Por lo tanto, decidimos probar modelos más simples y fáciles de entrenar, como los de la familia de Boosting.
         \vspace{0.2cm}
 
         \subsubsection{Boosting}
 
         El modelo que mejores resultados nos proporcionó fue el LightGBM, el cual es un modelo de boosting que utiliza árboles de decisión y 
-        es capaz de manejas grandes volúmenes de datos de manera eficiente.
+        es capaz de manejar grandes volúmenes de datos de manera eficiente.
 
         \vspace{0.2cm}
 
@@ -263,23 +296,96 @@ los precios de BEAHASH009, ya vistos anteriormente, podemos ver a continuación 
     }
 \end{center}
 
+\newpage
+
 Entonces, tomamos como rango de precios posibles para cada producto el máximo y el mínimo de los precios filtrados en los últimos 30 días. Cabe aclarar que 
 aún así los datos con los precios no filtrados sí fueron utilizados para entrenar el modelo.
 
 \vspace{0.2cm}
 
 Además, para simplificar la implementación de la estrategia de precios, decidimos que los precios de los productos serán los mismos en todas las tiendas y 
-para toda la semana.
+para toda la semana (aunque también probamos cambiar los precios por región, pero no mejoró los resultados).
 
 \vspace{0.2cm}
 
 Así, con un espacio de búsqueda más manejable, aplicamos una optimización bayesiana (con la librería Optuna) para encontrar la configuración de precios 
-que maximiza las ganancias totales según las predicicones del modelo.
+que maximiza las ventas totales según las predicicones del modelo. También probamos maximizar las ganancias totales (es decir, las ventas menos los costos), aunque 
+el resultado muy similar.
+
+\vspace{0.2cm}
+
+Como ya expusimos anteriormente, los resultados fueron muy positivos, y se esperaría aumentar casi un 40\% las 
+ventas semanales.
+
+
+\subsection{Interpretación del modelo}
+
+Gracias a que empleamos un modelo basado en árboles de decisión y no en redes neuronales complejas, nuestro modelo es altamente interpretable. 
+Veamos a continuación qué features fueron los más relevantes para la mejora de la performance del LightGBM: 
+
+\begin{center}
+    \makebox[\textwidth][c]{%
+        \includegraphics[width=1\textwidth]{graficos/importancia_features.png}%
+    }
+\end{center}
+
+Aclaración sobre el formato de los features: SUBGROUP\_price\_pct\_mean\_30D se refiere a la media móvil de los últimos 30 días 
+del cambio porcentual de los productos agrupados por la columna SUBGROUP, mientras que SUBGROUP\_mean\_30D se refiere a la misma media móvil 
+pero de las ventas totales.
+
+\vspace{0.2cm}
+
+De esta manera, podemos concluir que el modelo pudo captar lo importante que es el momento del año para predecir las ventas, como también lo fue 
+conocer el producto, sin importar tanto a qué categoría pertenecía. 
+
+\vspace{0.2cm}
+
+Además, un detalle interesante es que al ser STORE\_ID el feature más relevante, 
+esto quiere decir que las ventas cambian drásticamente según la tienda, como ya habíamos anticipado cuando analizamos el porcentaje de ganancias por región. 
+Sabiendo esto, lo más adecuado sería intentar optimizar los precios no sólo por región, sino por tienda. Sin embargo, esto sería muy costoso computacionalmente.
+
+\vspace{0.2cm}
+
+También fue de gran utilidad los lagging features para reconocer los patrones de ventas estacionales, tanto de los productos, subgrupos y tiendas. Cabe destacar 
+que fueron incluso más importantes que las mismas categorías del producto.
+
+\vspace{0.2cm}
+
+Otro punto para resaltar es que el precio tenga tanta poca importancia. Debido a esto, uno podría dudar de si realmente el modelo 
+está captando adecuadamente la relación precio-demanda. Aún así, durante la optimización fue claro que el modelo cambiaba significativamente sus 
+predicciones según los precios, manteniendo el resto de variables fijas.
+
+
+
 
 
 
 \newpage
 
 \section{Consideraciones Finales}
+
+En resumen, se pudo dar un análisis que dio un panorama de la situación actual de la empresa: cómo 
+fueron reduciendo sus ganancias y cuáles fueron los motivos más probables. A partir de esto, utilizamos un 
+modelo de AI que fue capaz de captar los patrones de la demanda y así construir una nueva estrategia de precios 
+maximizando las ganancias. 
+
+\vspace{0.2cm}
+
+Aunque los resultados sean buenos, dado que un aumento esperado del 40\% de las ganancias es muy significativo, es 
+importante aclarar que los modelos predictivos siempre tienen un margen de error y estos aumentos de ventas 
+nunca pueden estar garantizados. Aún así, creemos que es una buena aproximación, basada en un arduo análisis 
+y experimentación, que puede beneficiar en gran medida a la empresa.
+
+\vspace{0.2cm}
+
+Para un trabajo futuro, se debe considerar si los productos del subgrupo Basketball realmente no fueron 
+vendidos, y si fue así y no se debe a una falla en la carga de datos, sugerimos evaluar la posibilidad de retirar estos 
+productos del catálogo. 
+
+\vspace{0.2cm}
+
+Finalmente, si la empresa está satisfecha con esta primera aproximación de una estrategia de precios óptima, 
+podríamos mejorarla si se nos permite modificar los precios de un mismo producto en distintas tiendas, 
+en el caso de que sea factible en términos administrativos.
 
 \end{document}

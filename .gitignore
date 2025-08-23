@@ -1,3 +1,15 @@
 alix_env
 data/raw
 data/procesados
+info.wps
+~$info.wps
+todo.txt
+/.vscode
+src/resultados_test/resultados_lgb3.csv
+src/resultados_test/resultados_lgb4.csv
+src/resultados_test/resultados_lgb5.csv
+src/resultados_test/resultados_lgb_parametros.txt
+/src/__pycache__
+/src/resultados_optimizacion
+/src/resultados_test
+src/light_gbm_v2.ipynb

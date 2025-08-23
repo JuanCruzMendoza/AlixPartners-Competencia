@@ -1,12 +1,13 @@
 \contentsline {section}{\numberline {1}Introducción}{2}{}%
 \contentsline {section}{\numberline {2}Análisis Económico}{3}{}%
-\contentsline {section}{\numberline {3}Análisis Técnico}{6}{}%
-\contentsline {subsection}{\numberline {3.1}Preprocesamiento de Datos}{6}{}%
-\contentsline {subsection}{\numberline {3.2}Análisis de Correlación entre Subgrupos}{6}{}%
-\contentsline {subsection}{\numberline {3.3}Modelo Predictivo}{6}{}%
-\contentsline {subsubsection}{\numberline {3.3.1}Exploración de modelos}{6}{}%
-\contentsline {subsubsection}{\numberline {3.3.2}Regresiones}{7}{}%
-\contentsline {subsubsection}{\numberline {3.3.3}Deep Learning}{7}{}%
-\contentsline {subsubsection}{\numberline {3.3.4}Boosting}{8}{}%
-\contentsline {subsection}{\numberline {3.4}Optimización de Precios}{9}{}%
-\contentsline {section}{\numberline {4}Consideraciones Finales}{10}{}%
+\contentsline {section}{\numberline {3}Análisis Técnico}{8}{}%
+\contentsline {subsection}{\numberline {3.1}Preprocesamiento de Datos}{8}{}%
+\contentsline {subsection}{\numberline {3.2}Análisis de Correlación entre Subgrupos}{8}{}%
+\contentsline {subsection}{\numberline {3.3}Modelo Predictivo}{8}{}%
+\contentsline {subsubsection}{\numberline {3.3.1}Exploración de modelos}{8}{}%
+\contentsline {subsubsection}{\numberline {3.3.2}Regresiones}{9}{}%
+\contentsline {subsubsection}{\numberline {3.3.3}Deep Learning}{9}{}%
+\contentsline {subsubsection}{\numberline {3.3.4}Boosting}{9}{}%
+\contentsline {subsection}{\numberline {3.4}Optimización de Precios}{10}{}%
+\contentsline {subsection}{\numberline {3.5}Interpretación del modelo}{11}{}%
+\contentsline {section}{\numberline {4}Consideraciones Finales}{13}{}%

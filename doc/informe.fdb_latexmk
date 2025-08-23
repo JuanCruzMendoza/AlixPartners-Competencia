@@ -1,6 +1,6 @@
 # Fdb version 4
-["pdflatex"] 1755697785.9012 "c:/Users/Juan Cruz/Desktop/GitHub/AlixPartners-Competencia/doc/informe.tex" "informe.pdf" "informe" 1755697800.28636 0
-  "c:/Users/Juan Cruz/Desktop/GitHub/AlixPartners-Competencia/doc/informe.tex" 1755697783 11142 9e4b6d4338bfc1cd5e981bb886652d6f ""
+["pdflatex"] 1755956987.97029 "c:/Users/Juan Cruz/Desktop/GitHub/AlixPartners-Competencia/doc/informe.tex" "informe.pdf" "informe" 1755957000.38375 0
+  "c:/Users/Juan Cruz/Desktop/GitHub/AlixPartners-Competencia/doc/informe.tex" 1755956986 21427 adadfc1e80a8c6078ebeaf157c2cbce0 ""
   "c:/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1745243807 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "c:/texlive/2025/texmf-dist/fonts/map/fontname/texfonts.map" 1745249250 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "c:/texlive/2025/texmf-dist/fonts/tfm/jknappen/ec/tcrm1200.tfm" 1745246643 1536 74b7293ec3713bb7fdca8dd1bd1f469c ""
@@ -44,15 +44,19 @@
   "c:/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1745268100 5567782 00e0fb0c7cc9c7361a97e3a2230dfbe7 ""
   "c:/texlive/2025/texmf-var/web2c/pdftex/pdflatex.fmt" 1745268247 3561359 11b30be3dd6fb4742fe42373ff0241b4 ""
   "c:/texlive/2025/texmf.cnf" 1745268067 713 614551405fc44b98efbf516466e3c909 ""
+  "graficos/cambios_nuevos_precios.png" 1755906032 160985 8f713d16b3a4b9121c6e5987c8d3a4d4 ""
   "graficos/demanda_promedio_semanal_por_categoria.png" 1755621076 1035490 5db89cd9a9e50681498861518d09858d ""
   "graficos/evolucion_porcentual_precios.png" 1755621104 597197 02c7e7535503f7f50bfbf6254d03d167 ""
   "graficos/ganancia_diaria_total.png" 1755621000 603780 0f79f3435758461ef14c7ee0234dd09e ""
   "graficos/ganancia_porcentual_por_categoria.png" 1755621142 180869 d8d7a6444f2d979aa9a926ce009dc26a ""
+  "graficos/ganancia_porcentual_por_region.png" 1755621152 165809 f56c5f382846a7f81cf9c18f28702caa ""
+  "graficos/importancia_features.png" 1755889149 286156 b4afcc8ce54bde5c8df3a124c6e9b1b9 ""
   "graficos/precios_sku_BEAHASH009.png" 1755632729 2037821 5713ca813c8731eaf92c1fdffaef49e3 ""
   "graficos/precios_sku_BEAHASH009_filtrado.png" 1755632746 1917791 ce6d949c38657d0bf457c29ba95febf4 ""
-  "informe.aux" 1755697800 803 d118b1e930456f3393fa3f4dc614b38d "pdflatex"
-  "informe.tex" 1755697783 11142 9e4b6d4338bfc1cd5e981bb886652d6f ""
-  "informe.toc" 1755697800 484 f3eea920f79545bc0a87b9cf4b4bff15 "pdflatex"
+  "graficos/relacion_precio_demanda.png" 1755621125 1215279 62ad525191c22634d72ed6ca135e91cd ""
+  "informe.aux" 1755957000 1507 20b47b591b26b845197072c18aec1536 "pdflatex"
+  "informe.tex" 1755956986 21427 adadfc1e80a8c6078ebeaf157c2cbce0 ""
+  "informe.toc" 1755957000 941 f48f79983da49f01e6b17a0bd1608867 "pdflatex"
   (generated)
   "informe.aux"
   "informe.log"
