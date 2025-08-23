@@ -1,2 +1,2 @@
 # AlixPartners-Competencia
-Modelos de demanda de productos y estrategias de precios óptimas
+En el marco de la competencia de Ciencia de Datos de la consultora AlixPartners, nos fue dado un conjunto de datos de una empresa minorista con las transacciones de los últimos años. Nuestro objetivo fue construir un modelo de AI (LightGBM) capaz de predecir adecuadamente la demanda y capturar la relación precio-demanda de los distintos productos. Con el mismo, creamos una estrategia de precios que maximiza las ventas totales (a través de optimización bayesiana).
